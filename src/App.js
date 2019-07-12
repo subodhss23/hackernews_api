@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 
 const API = 'https://hn.algolia.com/api/v1/search?query=';
-const DEFAULT_QUERY = 'react';
+const DEFAULT_QUERY = 'javascript';
 
 class App extends Component {
   constructor(props) {
@@ -14,36 +15,46 @@ class App extends Component {
     };
   }
 
+  getStories(){
+    this.setState({ isLoading: true });
+  }
+
   componentDidMount() {
     this.setState({ isLoading: true});
 
-    fetch(API + DEFAULT_QUERY)
-      .then(response => {
-        if (response.ok){
-          return response.json();
-        } else {
-          throw new Error('Something went wrong...');
-        }
-      })
-      .then(data => this.setState({ hits: data.hits, isLoading: false }))
-      .catch(err => this.setState({ err, isLoading: false}));
+
+  axios.get(API + DEFAULT_QUERY)
+    .then(result => this.setState({
+      hits: result.data.hits,
+      isLoading: false
+    }))
+    .catch(error => this.setState({
+      error,
+      isLoading: false
+    }));
   }
 
  render(){
-   const { hits, isLoading } = this.state;
+   const { hits, isLoading, error } = this.state;
+
+   if(error){
+     return <p>{error.message}</p>
+   }
 
    if (isLoading){
      return <p>Loading...</p>;
 
    }
    return (
-     <ul>
+     <div>
+       <h2>Javascript News!</h2>
+     <ol>
        {hits.map(hit =>
         <li key={hit.objectID}>
           <a href={hit.url}>{hit.title}</a>
         </li>)}
-     </ul>
-
+     </ol>
+     </div>
    );
  }
 }
